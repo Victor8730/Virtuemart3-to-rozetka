@@ -1,8 +1,9 @@
 <?php
-if($_GET['download'] == '1'){//check command
+if($_POST['download'] == '1'){//check command
 //header('Content-Type: text/html; charset=utf-8');
 include 'config.php'; // get config variables $db_prefix, $db_user, $db_pass, $db_host, $db_name, $urlSite, $nameSite, $nameCompany
-$priceChange = (intval(isset($_GET['p']))) ? $_GET['p'] : 1; // if need update price
+$priceChange = (intval(isset($_POST['price']))) ? $_POST['price'] : 1; // if need update price
+$idExclude = (isset($_POST['product'])) ? explode(',' , $_POST['product'].',0') : array(0); //id exclude id need
 spl_autoload_register(function ($class_name) {
    include 'class/'.$class_name . '.php';
 });
@@ -41,7 +42,7 @@ $connect  = $db->connect();
     $productInfo = $db->load_data( $connect , 'virtuemart_products_ru_ru');//data
     $prodToXml = [];
     foreach($productInfo as $prod){
-        if ($prod['virtuemart_product_id'] != 0){ //skipping 0 id, if exist
+        if (!in_array( $prod['virtuemart_product_id'], $idExclude)){ //skipping exclude id
             $prodFirstData = $db->load_data($connect, 'virtuemart_products', 'virtuemart_product_id', $prod['virtuemart_product_id']);
             $prodPriceData = $db->load_data($connect, 'virtuemart_product_prices', 'virtuemart_product_id', $prod['virtuemart_product_id']);
             //manufacturer
@@ -78,18 +79,17 @@ $connect  = $db->connect();
     $xml->appendXmlToXml($xmlShop,$xmlProduct);
 $xmlData = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE yml_catalog SYSTEM "shops.dtd"><yml_catalog date="'.date("Y-m-d H:i:s").'"></yml_catalog>');
 $xml->appendXmlToXml($xmlData,$xmlShop);
-/*header('Content-Description: File Transfer');
+header('Content-Description: File Transfer');
 header('Content-Type: application/octet-stream');
 header('Content-Disposition: attachment; filename=rozetka.xml');
 header('Content-Transfer-Encoding: binary');
 header('Expires: 0');
 header('Cache-Control: must-revalidate');
 header('Pragma: public');
-//header('Content-Length: ' . filesize($file));*/
+//header('Content-Length: ' . filesize($file));
 
 echo $xmlData->asXML();
 
 }else{
     echo 'ERROR!';
 }
-?>

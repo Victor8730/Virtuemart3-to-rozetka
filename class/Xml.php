@@ -13,7 +13,7 @@ class Xml
 		$this->path	= $path;
 	}
 
-	public function XmlToArray() {
+	public function getXmlArray() {
 		if (file_exists($this->path)) {
 			$array = array();
 			$xml = simplexml_load_file($this->path) or die('Error: Cannot create object');
